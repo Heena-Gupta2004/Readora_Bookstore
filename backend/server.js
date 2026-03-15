@@ -6,6 +6,7 @@ import mongoose from "mongoose";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import bcrypt from "bcryptjs";
+import morgan from "morgan";
 import { books as seedBooks } from "./books.js";
 
 dotenv.config();
@@ -16,9 +17,15 @@ const MONGODB_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/bookst
 const PASSWORD_SALT_ROUNDS = Number(process.env.PASSWORD_SALT_ROUNDS || 10);
 const SESSION_TTL_DAYS = Number(process.env.SESSION_TTL_DAYS || 7);
 const SESSION_TTL_MS = Math.max(1, SESSION_TTL_DAYS) * 24 * 60 * 60 * 1000;
+const ADMIN_EMAILS = String(process.env.ADMIN_EMAILS || "")
+  .split(",")
+  .map((value) => value.trim().toLowerCase())
+  .filter(Boolean);
+const ORDER_STATUSES = ["placed", "processing", "shipped", "delivered", "cancelled"];
 
 const allowedOriginPattern = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i;
 app.use(helmet({ crossOriginResourcePolicy: false }));
+app.use(morgan("dev"));
 app.use(
   cors({
     origin(origin, callback) {
@@ -46,6 +53,7 @@ const bookSchema = new mongoose.Schema(
     category: String,
     price: Number,
     image: String,
+    stock: { type: Number, default: 20, min: 0 },
   },
   { timestamps: true }
 );
@@ -139,6 +147,10 @@ function sanitizeBook(input) {
   };
 }
 
+function isAdminEmail(email) {
+  return ADMIN_EMAILS.includes(normalizeEmail(email));
+}
+
 async function requireAuth(req, res) {
   const header = req.headers.authorization || "";
   const token = header.startsWith("Bearer ") ? header.slice(7).trim() : "";
@@ -164,10 +176,23 @@ async function requireAuth(req, res) {
   return { user, token };
 }
 
+async function requireAdmin(req, res) {
+  const auth = await requireAuth(req, res);
+  if (!auth) return null;
+  if (!isAdminEmail(auth.user.email)) {
+    res.status(403).json({ error: "Forbidden" });
+    return null;
+  }
+  return auth;
+}
+
 async function ensureBooksSeed() {
   const count = await Book.countDocuments();
-  if (count > 0) return;
-  await Book.insertMany(seedBooks);
+  if (count === 0) {
+    await Book.insertMany(seedBooks.map((book) => ({ ...book, stock: 20 })));
+    return;
+  }
+  await Book.updateMany({ stock: { $exists: false } }, { $set: { stock: 20 } });
 }
 
 app.get("/api/health", (_req, res) => {
@@ -251,7 +276,10 @@ app.post("/api/auth/login", authLimiter, async (req, res) => {
       expiresAt: new Date(Date.now() + SESSION_TTL_MS),
     });
 
-    return res.json({ token, user: { id: user.id, name: user.name, email: user.email } });
+    return res.json({
+      token,
+      user: { id: user.id, name: user.name, email: user.email, isAdmin: isAdminEmail(user.email) },
+    });
   } catch (err) {
     return res.status(500).json({ error: "Login failed" });
   }
@@ -267,7 +295,9 @@ app.post("/api/auth/logout", async (req, res) => {
 app.get("/api/auth/me", async (req, res) => {
   const auth = await requireAuth(req, res);
   if (!auth) return;
-  return res.json({ user: { id: auth.user.id, name: auth.user.name, email: auth.user.email } });
+  return res.json({
+    user: { id: auth.user.id, name: auth.user.name, email: auth.user.email, isAdmin: isAdminEmail(auth.user.email) },
+  });
 });
 
 app.get("/api/cart", async (req, res) => {
@@ -431,6 +461,35 @@ app.post("/api/orders", async (req, res) => {
     return res.status(400).json({ error: "Cart is empty" });
   }
 
+  const bookIds = items.map((item) => item.id);
+  const books = await Book.find({ id: { $in: bookIds } }).lean();
+  const stockMap = new Map(books.map((book) => [book.id, book.stock ?? 0]));
+
+  for (const item of items) {
+    const available = stockMap.get(item.id) ?? 0;
+    if (item.qty > available) {
+      return res.status(400).json({ error: `Insufficient stock for ${item.title}` });
+    }
+  }
+
+  const updated = [];
+  try {
+    for (const item of items) {
+      const result = await Book.findOneAndUpdate(
+        { id: item.id, stock: { $gte: item.qty } },
+        { $inc: { stock: -item.qty } },
+        { new: true }
+      );
+      if (!result) throw new Error("Stock update failed");
+      updated.push(item);
+    }
+  } catch (err) {
+    for (const item of updated) {
+      await Book.updateOne({ id: item.id }, { $inc: { stock: item.qty } });
+    }
+    return res.status(400).json({ error: "Stock changed, please try again" });
+  }
+
   const total = items.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.qty || 0), 0);
   const order = await Order.create({
     userId: auth.user.id,
@@ -454,7 +513,36 @@ app.get("/api/orders", async (req, res) => {
   res.json({ items: orders || [] });
 });
 
-async function start() {
+app.get("/api/admin/orders", async (req, res) => {
+  const auth = await requireAdmin(req, res);
+  if (!auth) return;
+
+  const orders = await Order.find({}).sort({ createdAt: -1 }).lean();
+  const userIds = [...new Set(orders.map((order) => order.userId))];
+  const users = await User.find({ id: { $in: userIds } }).lean();
+  const userMap = new Map(users.map((user) => [user.id, user]));
+  const enriched = orders.map((order) => ({
+    ...order,
+    user: userMap.get(order.userId) ? { id: userMap.get(order.userId).id, email: userMap.get(order.userId).email } : null,
+  }));
+  res.json({ items: enriched });
+});
+
+app.patch("/api/admin/orders/:id/status", async (req, res) => {
+  const auth = await requireAdmin(req, res);
+  if (!auth) return;
+
+  const status = String(req.body.status || "").trim().toLowerCase();
+  if (!ORDER_STATUSES.includes(status)) {
+    return res.status(400).json({ error: "Invalid status" });
+  }
+
+  const order = await Order.findByIdAndUpdate(req.params.id, { status }, { new: true }).lean();
+  if (!order) return res.status(404).json({ error: "Order not found" });
+  res.json({ order });
+});
+
+export async function start() {
   try {
     await mongoose.connect(MONGODB_URI);
     await ensureBooksSeed();
@@ -467,4 +555,8 @@ async function start() {
   }
 }
 
-start();
+export { app };
+
+if (process.env.NODE_ENV !== "test") {
+  start();
+}

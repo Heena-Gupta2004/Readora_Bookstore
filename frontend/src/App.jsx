@@ -8,6 +8,7 @@ import ProfilePage from "./pages/ProfilePage";
 import AuthPage from "./pages/AuthPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import CategoryPage from "./pages/CategoryPage";
+import AdminPage from "./pages/AdminPage";
 
 function LegacyHtmlRedirect() {
   const location = useLocation();
@@ -42,6 +43,7 @@ export default function App() {
         <Route path="cart" element={<CartPage />} />
         <Route path="wishlist" element={<WishlistPage />} />
         <Route path="profile" element={<ProfilePage />} />
+        <Route path="admin" element={<AdminPage />} />
         <Route path="categories/:categorySlug" element={<CategoryPage />} />
         <Route path="auth" element={<AuthPage />} />
         <Route path="login" element={<Navigate to="/auth" replace />} />

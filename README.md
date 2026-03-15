@@ -8,6 +8,7 @@ Full-stack bookstore app with React (Vite) frontend and Node/Express + MongoDB b
 - Authentication (register/login)
 - Checkout creates orders
 - Order history in profile
+- Admin order management (status updates)
 
 ## Tech Stack
 - Frontend: React, Vite, React Router
@@ -43,7 +44,11 @@ MONGODB_URI=mongodb://127.0.0.1:27017/bookstore
 PORT=5000
 PASSWORD_SALT_ROUNDS=10
 SESSION_TTL_DAYS=7
+ADMIN_EMAILS=admin@example.com
 ```
+
+## Admin
+Add your email to `ADMIN_EMAILS` (comma separated) and login to see the Admin page.
 
 ## Troubleshooting
 - If port 5000 is busy:

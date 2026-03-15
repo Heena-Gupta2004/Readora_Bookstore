@@ -9,10 +9,12 @@ export default function ProfilePage() {
   const [cartCount, setCartCount] = useState(0);
   const [wishlistCount, setWishlistCount] = useState(0);
   const [orders, setOrders] = useState([]);
+  const [loadingOrders, setLoadingOrders] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
     if (!isAuthenticated) return;
+    setLoadingOrders(true);
     Promise.all([api("/cart"), api("/wishlist"), api("/orders")])
       .then(([cartData, wishlistData, ordersData]) => {
         const count = (cartData.items || []).reduce((sum, item) => sum + item.qty, 0);
@@ -21,7 +23,8 @@ export default function ProfilePage() {
         setOrders(ordersData.items || []);
         setError("");
       })
-      .catch((err) => setError(err.message || "Unable to load profile stats"));
+      .catch((err) => setError(err.message || "Unable to load profile stats"))
+      .finally(() => setLoadingOrders(false));
   }, [isAuthenticated]);
 
   if (!isAuthenticated) {
@@ -55,7 +58,8 @@ export default function ProfilePage() {
 
       <section className="panel">
         <h2>Order History</h2>
-        {!orders.length ? <p className="empty">No orders yet.</p> : null}
+        {loadingOrders ? <p className="empty">Loading orders...</p> : null}
+        {!loadingOrders && !orders.length ? <p className="empty">No orders yet.</p> : null}
         {orders.map((order) => (
           <article key={order._id} className="line-item">
             <div className="order-info">
@@ -63,6 +67,7 @@ export default function ProfilePage() {
               <p>{new Date(order.createdAt).toLocaleString()}</p>
               <p>{order.items?.length || 0} items</p>
               <strong>{formatINR(order.total)}</strong>
+              <p className="order-status">Status: {order.status}</p>
             </div>
             <div className="order-items">
               {(order.items || []).map((item) => (

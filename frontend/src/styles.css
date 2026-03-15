@@ -442,8 +442,42 @@ button.ghost:hover,
   color: var(--muted);
 }
 
+.order-status {
+  margin: 6px 0 0;
+  font-weight: 600;
+  color: var(--brand-dark);
+}
+
 .order-total {
   font-weight: 800;
+}
+
+.order-admin-list {
+  display: grid;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.order-admin-card {
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #fff;
+}
+
+.order-admin-items {
+  display: grid;
+  gap: 10px;
+}
+
+.order-admin-actions select {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #dacfc0;
+  background: #fff;
+  margin-left: 8px;
 }
 
 .avatar {

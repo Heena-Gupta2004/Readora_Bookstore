@@ -4,7 +4,7 @@ import { Link, NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export default function Layout() {
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, isAdmin, logout } = useAuth();
   const trailRef = useRef(null);
 
   useEffect(() => {
@@ -59,6 +59,7 @@ export default function Layout() {
           <NavLink to="/cart">Cart</NavLink>
           <NavLink to="/wishlist">Wishlist</NavLink>
           <NavLink to="/profile">Profile</NavLink>
+          {isAdmin ? <NavLink to="/admin">Admin</NavLink> : null}
           {!isAuthenticated ? (
             <NavLink to="/auth">Login</NavLink>
           ) : (
