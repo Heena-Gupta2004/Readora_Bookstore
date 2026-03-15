@@ -1,0 +1,50 @@
+{
+  "users": [
+    {
+      "id": "96c23d62-6463-464d-ab5a-c5e3cdcd37c8",
+      "name": "khushi",
+      "email": "koshu1303@gmail.com",
+      "passwordHash": "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92",
+      "createdAt": "2026-02-27T15:59:36.208Z"
+    },
+    {
+      "id": "dca6536e-9517-43d7-92aa-08fecaaa5de1",
+      "name": "asdf",
+      "email": "asd@df.com",
+      "passwordHash": "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92",
+      "createdAt": "2026-03-13T09:06:09.673Z"
+    }
+  ],
+  "sessions": [
+    {
+      "token": "e0d0e552-9d4d-42df-81e4-4cb77d574542",
+      "userId": "dca6536e-9517-43d7-92aa-08fecaaa5de1",
+      "createdAt": "2026-03-13T09:06:09.687Z"
+    }
+  ],
+  "carts": {
+    "96c23d62-6463-464d-ab5a-c5e3cdcd37c8": [],
+    "dca6536e-9517-43d7-92aa-08fecaaa5de1": [
+      {
+        "id": "kids-new-girl",
+        "title": "The New Girl",
+        "category": "Kids",
+        "price": 199,
+        "image": "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcQ5A5p3ignP4vmM6srk7bxS1vjlOZvJheKA4C6zLUw2EOdWb281KgVuXX4xtaIUNmEPYEyQSc2QzYQxuTzjB53qX9B3k3cBR5XT1pdsvvEDyU0Q45TtBEju2yYBI9Prd5MWwhk4nQ&usqp=CAc",
+        "qty": 2
+      }
+    ]
+  },
+  "wishlists": {
+    "96c23d62-6463-464d-ab5a-c5e3cdcd37c8": [
+      {
+        "id": "hindi-mahagatha",
+        "title": "MahaGatha",
+        "category": "Hindi",
+        "price": 249,
+        "image": "https://99bookstores.com/cdn/shop/files/A1HSVE8jBLL._SL1500.jpg?v=1720697190&width=533"
+      }
+    ],
+    "dca6536e-9517-43d7-92aa-08fecaaa5de1": []
+  }
+}
