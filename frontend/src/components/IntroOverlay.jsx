@@ -1,16 +1,19 @@
 import { useMemo } from "react";
 
 const BRAND = "READORA";
+const LETTERS = BRAND.split("");
 
 export default function IntroOverlay() {
   const letters = useMemo(
     () =>
-      BRAND.split("").map((char, index) => ({
+      LETTERS.map((char, index) => ({
         id: `${char}-${index}`,
         char,
-        x: `${Math.round((Math.random() - 0.5) * 140)}vw`,
-        y: `${Math.round((Math.random() - 0.5) * 140)}vh`,
-        delay: `${index * 0.2}s`,
+        x: `${Math.round((Math.random() - 0.5) * 120)}vw`,
+        y: `${Math.round((Math.random() - 0.5) * 120)}vh`,
+        z: `${Math.round((Math.random() - 0.5) * 900)}px`,
+        rot: `${Math.round(Math.random() * 360)}deg`,
+        delay: `${index * 0.18}s`,
       })),
     []
   );
@@ -22,7 +25,13 @@ export default function IntroOverlay() {
           <span
             key={letter.id}
             className="intro-letter"
-            style={{ "--x": letter.x, "--y": letter.y, "--delay": letter.delay }}
+            style={{
+              "--x": letter.x,
+              "--y": letter.y,
+              "--z": letter.z,
+              "--r": letter.rot,
+              "--delay": letter.delay,
+            }}
           >
             {letter.char}
           </span>

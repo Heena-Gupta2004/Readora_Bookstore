@@ -546,10 +546,16 @@ button.ghost:hover,
   position: fixed;
   inset: 0;
   z-index: 10000;
-  background: radial-gradient(circle at top, #fff2e6 0%, #f6e6d6 45%, #ead8c8 100%);
+  background:
+    radial-gradient(circle at 20% 10%, rgba(255, 244, 231, 0.9), transparent 45%),
+    radial-gradient(circle at 80% 20%, rgba(255, 225, 200, 0.8), transparent 40%),
+    radial-gradient(circle at 50% 80%, rgba(255, 233, 210, 0.9), transparent 45%),
+    #f3e2d1;
   display: grid;
   place-items: center;
   overflow: hidden;
+  perspective: 1200px;
+  transform-style: preserve-3d;
 }
 
 .intro-letters {
@@ -561,22 +567,32 @@ button.ghost:hover,
   font-weight: 900;
   color: #6b4735;
   letter-spacing: 6px;
+  transform-style: preserve-3d;
+  animation: sceneSpin 8s ease-in-out infinite;
 }
 
 .intro-letter {
   position: absolute;
-  transform: translate(var(--x), var(--y)) scale(0.6);
+  transform:
+    translate3d(var(--x), var(--y), var(--z))
+    rotateY(var(--r))
+    rotateX(var(--r))
+    scale(0.6);
   opacity: 0;
-  animation: flyIn 2.2s ease-out forwards;
+  animation: flyIn3d 2.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
   animation-delay: var(--delay);
+  text-shadow:
+    0 10px 24px rgba(50, 28, 17, 0.35),
+    0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .intro-logo {
   position: relative;
   text-align: center;
   opacity: 0;
-  animation: logoReveal 2s ease forwards;
-  animation-delay: 4s;
+  transform-style: preserve-3d;
+  animation: logoReveal 2.2s ease forwards;
+  animation-delay: 4.2s;
 }
 
 .intro-logo-circle {
@@ -591,6 +607,7 @@ button.ghost:hover,
   font-size: 36px;
   font-weight: 800;
   box-shadow: 0 18px 40px rgba(51, 31, 17, 0.25);
+  transform: translateZ(80px);
 }
 
 .intro-logo-text {
@@ -599,28 +616,44 @@ button.ghost:hover,
   color: #4b2f20;
 }
 
-@keyframes flyIn {
+@keyframes flyIn3d {
   0% {
     opacity: 0;
-    transform: translate(var(--x), var(--y)) scale(0.6);
+    transform:
+      translate3d(var(--x), var(--y), calc(var(--z) * 1.2))
+      rotateY(var(--r))
+      rotateX(var(--r))
+      scale(0.4);
   }
-  70% {
+  60% {
     opacity: 1;
   }
   100% {
     opacity: 1;
-    transform: translate(0, 0) scale(1);
+    transform: translate3d(0, 0, 0) rotateY(0deg) rotateX(0deg) scale(1);
   }
 }
 
 @keyframes logoReveal {
   0% {
     opacity: 0;
-    transform: scale(0.9);
+    transform: translateZ(-120px) scale(0.7);
   }
   100% {
     opacity: 1;
-    transform: scale(1);
+    transform: translateZ(0) scale(1);
+  }
+}
+
+@keyframes sceneSpin {
+  0% {
+    transform: rotateX(12deg) rotateY(-10deg);
+  }
+  50% {
+    transform: rotateX(-6deg) rotateY(16deg);
+  }
+  100% {
+    transform: rotateX(12deg) rotateY(-10deg);
   }
 }
 
