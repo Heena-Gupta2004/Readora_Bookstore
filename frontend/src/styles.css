@@ -542,6 +542,88 @@ button.ghost:hover,
   100% { transform: scale(1.01); }
 }
 
+.intro-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: radial-gradient(circle at top, #fff2e6 0%, #f6e6d6 45%, #ead8c8 100%);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.intro-letters {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: clamp(28px, 6vw, 72px);
+  font-weight: 900;
+  color: #6b4735;
+  letter-spacing: 6px;
+}
+
+.intro-letter {
+  position: absolute;
+  transform: translate(var(--x), var(--y)) scale(0.6);
+  opacity: 0;
+  animation: flyIn 2.2s ease-out forwards;
+  animation-delay: var(--delay);
+}
+
+.intro-logo {
+  position: relative;
+  text-align: center;
+  opacity: 0;
+  animation: logoReveal 2s ease forwards;
+  animation-delay: 4s;
+}
+
+.intro-logo-circle {
+  width: 90px;
+  height: 90px;
+  border-radius: 26px;
+  margin: 0 auto 10px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #b46d47, #8a4a2b);
+  color: #fff;
+  font-size: 36px;
+  font-weight: 800;
+  box-shadow: 0 18px 40px rgba(51, 31, 17, 0.25);
+}
+
+.intro-logo-text {
+  font-size: clamp(22px, 4vw, 40px);
+  font-weight: 800;
+  color: #4b2f20;
+}
+
+@keyframes flyIn {
+  0% {
+    opacity: 0;
+    transform: translate(var(--x), var(--y)) scale(0.6);
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+@keyframes logoReveal {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 @media (max-width: 900px) {
   .cart-layout,
   .profile-grid {

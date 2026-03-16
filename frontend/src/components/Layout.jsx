@@ -1,11 +1,18 @@
 import React from "react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import IntroOverlay from "./IntroOverlay";
 
 export default function Layout() {
   const { isAuthenticated, isAdmin, logout } = useAuth();
   const trailRef = useRef(null);
+  const [showIntro, setShowIntro] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowIntro(false), 10000);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const trail = trailRef.current;
@@ -46,6 +53,7 @@ export default function Layout() {
 
   return (
     <div className="app-shell">
+      {showIntro ? <IntroOverlay /> : null}
       <header className="topbar">
         <Link className="brand" to="/">
           <span className="brand-logo" aria-hidden="true">
